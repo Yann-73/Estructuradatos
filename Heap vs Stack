@@ -1,0 +1,113 @@
+Tarea 3 - Heap vs Stack
+1. Definición y Propósito de Heap y Stack
+Stack (Pila)
+•	Definición: El Stack es una región de memoria que opera bajo el principio LIFO (Last In, First Out), utilizada para almacenar variables locales, parámetros de funciones y la información de retorno de funciones (como la dirección de retorno). Cada vez que se llama a una función, se crea un "marco de pila" (stack frame) con estos datos.
+•	Propósito: Gestionar la memoria de manera automática para variables temporales y el flujo de control del programa. Es ideal para datos que solo necesitan existir durante la ejecución de una función.
+Heap (Montículo)
+•	Definición: El Heap es una región de memoria más grande y flexible, diseñada para la asignación dinámica de memoria. No sigue un orden predefinido como el Stack y permite al programador controlar manualmente la asignación y liberación de memoria.
+•	Propósito: Permitir la creación de variables y estructuras de datos cuyo tamaño no se conoce en tiempo de compilación o que deben persistir más allá del ámbito de una función, como objetos compartidos o estructuras grandes.
+________________________________________
+2. Características Principales
+Stack
+•	Asignación automática: La memoria se asigna al declarar una variable y se libera al salir del ámbito.
+•	Tamaño limitado: Su tamaño es fijo (por ejemplo, 1 MB en muchos sistemas), lo que puede provocar un "stack overflow" si se excede.
+•	Acceso rápido: Las operaciones son simples (mover un puntero), lo que las hace muy eficientes.
+•	Estructura LIFO: Las variables se gestionan en orden inverso a su declaración.
+Heap
+•	Asignación manual: El programador usa new para asignar memoria y delete para liberarla en C++.
+•	Tamaño dinámico: Su capacidad está limitada solo por la memoria disponible en el sistema.
+•	Acceso más lento: Requiere buscar bloques de memoria libres, lo que es más costoso que en el Stack.
+•	Fragmentación: La asignación/desasignación repetida puede fragmentar la memoria, dificultando la asignación de bloques grandes.
+________________________________________
+3. Ventajas y Desventajas en la Gestión de Memoria
+Stack
+•	Ventajas: 
+o	Rapidez: La asignación y desasignación son extremadamente rápidas.
+o	Simplicidad: El compilador gestiona la memoria automáticamente, sin intervención del programador.
+o	Localidad de caché: Las variables están cerca en memoria, mejorando el rendimiento de la caché.
+•	Desventajas: 
+o	Tamaño limitado: No es adecuado para datos grandes.
+o	Ámbito restringido: Las variables solo existen dentro del ámbito donde se declaran.
+Heap
+•	Ventajas: 
+o	Flexibilidad: Permite asignar memoria en tiempo de ejecución para tamaños variables.
+o	Persistencia: Los datos pueden sobrevivir al ámbito de una función.
+•	Desventajas: 
+o	Gestión manual: Requiere liberar la memoria explícitamente, lo que puede causar fugas de memoria si no se hace correctamente.
+o	Rendimiento menor: La asignación y desasignación son más lentas.
+o	Fragmentación: Puede reducir la eficiencia del uso de memoria con el tiempo.
+________________________________________
+4. Impacto en el Rendimiento de los Programas en C++
+•	Stack: 
+o	Rendimiento alto: Las operaciones son rápidas debido a su simplicidad y al uso de un puntero único. Además, la localidad de caché mejora el acceso a datos.
+o	Ideal para: Variables temporales y pequeñas donde la velocidad es crítica.
+•	Heap: 
+o	Rendimiento variable: La asignación implica buscar bloques libres, lo que introduce latencia. La fragmentación puede empeorar el rendimiento a largo plazo.
+o	Ideal para: Estructuras grandes o persistentes, aunque a costa de mayor overhead.
+En resumen, el Stack es preferible para operaciones rápidas y datos temporales, mientras que el Heap es necesario para estructuras más complejas, aunque con un costo en rendimiento.
+________________________________________
+5. Aplicaciones Prácticas en C++ con Ejemplos
+Arreglos
+•	Arreglos estáticos (Stack): 
+o	Declarados con tamaño fijo en tiempo de compilación.
+o	Ejemplo: 
+cpp
+ContraerAjusteCopiar
+int arr[10];
+	Se almacena en el Stack.
+o	Ventaja: Acceso rápido y gestión automática.
+o	Desventaja: Tamaño fijo y limitado por el Stack.
+•	Arreglos dinámicos (Heap): 
+o	Tamaño definido en tiempo de ejecución.
+o	Ejemplo: 
+cpp
+ContraerAjusteCopiar
+int* arr = new int[10];
+// Uso del arreglo
+delete[] arr; // Liberación manual
+	Se almacena en el Heap.
+o	Ventaja: Flexibilidad en el tamaño.
+o	Desventaja: Requiere liberar memoria manualmente.
+Objetos
+•	Objetos en el Stack: 
+o	Creados automáticamente y destruidos al salir del ámbito.
+o	Ejemplo: 
+cpp
+ContraerAjusteCopiar
+class Persona {
+public:
+    string nombre;
+    int edad;
+    Persona(string n, int e) : nombre(n), edad(e) {}
+};
+
+Persona p("Juan", 25); // En el Stack
+	p se almacena en el Stack.
+o	Ventaja: Gestión automática.
+o	Desventaja: Solo existe dentro del ámbito.
+•	Objetos en el Heap: 
+o	Creados dinámicamente y persisten hasta ser liberados.
+o	Ejemplo: 
+cpp
+ContraerAjusteCopiar
+Persona* p = new Persona("Juan", 25); // En el Heap
+// Uso del objeto
+delete p; // Liberación manual
+	p apunta a un objeto en el Heap.
+o	Ventaja: Persistencia y accesibilidad entre funciones.
+o	Desventaja: Requiere gestión manual.
+________________________________________
+6. Casos de Uso: Cuándo Usar Heap o Stack
+Cuándo usar el Stack
+•	Variables locales y parámetros: Datos temporales dentro de una función.
+•	Estructuras pequeñas: Cuando el tamaño es conocido y no excede el límite del Stack.
+•	Rendimiento crítico: En código donde la velocidad es prioritaria.
+Cuándo usar el Heap
+•	Estructuras grandes: Cuando el tamaño supera el Stack o no se conoce en tiempo de compilación.
+•	Datos compartidos: Para objetos accesibles desde múltiples funciones o scopes.
+•	Larga duración: Cuando los datos deben persistir más allá del ámbito de una función.
+________________________________________
+Resumen
+•	Stack: Rápido, automático y limitado. Ideal para variables locales y temporales.
+•	Heap: Flexible, manual y más lento. Adecuado para datos grandes o persistentes.
+En C++, la elección entre Heap y Stack depende del tamaño, tiempo de vida y necesidades de rendimiento del programa. El Stack es óptimo para simplicidad y velocidad, mientras que el Heap ofrece flexibilidad a costa de mayor complejidad en la gestión de memoria.
