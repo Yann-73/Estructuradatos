@@ -1,0 +1,101 @@
+Tarea 4 - Analizando Vector Genérico
+1. ¿Qué operadores deben sobrecargarse en la clase T (por ejemplo, en la clase Persona) para que el algoritmo BubbleSort funcione correctamente en Vector<T>?
+Para que el algoritmo BubbleSort funcione correctamente con la clase genérica Vector<T>, la clase T (en este caso, por ejemplo, Persona) debe permitir la comparación entre sus elementos. BubbleSort requiere determinar el orden relativo de dos elementos para realizar los intercambios necesarios durante la ordenación. Esto implica que, como mínimo, se debe sobrecargar el operador < (menor que) en la clase T, ya que este operador es comúnmente utilizado en implementaciones de BubbleSort para comparar elementos.
+Por ejemplo, si deseamos ordenar un Vector<Persona> por la edad de las personas, necesitaríamos definir el operador < en la clase Persona de la siguiente manera:
+cpp
+ContraerAjusteCopiar
+bool Persona::operator<(const Persona& other) const {
+    return this->edad < other.edad;
+}
+Este código permite comparar dos objetos Persona según su edad, devolviendo true si la edad del objeto actual es menor que la del otro objeto. Con esto, BubbleSort podría ordenar el vector correctamente comparando las edades.
+Aunque no es estrictamente necesario para BubbleSort, sobrecargar otros operadores como > (mayor que) o == (igualdad) podría ser útil en otros contextos o algoritmos. Sin embargo, para una implementación básica de BubbleSort, basta con el operador <.
+________________________________________
+2. ¿Qué cambios o cuidados se deben tener al usar objetos del heap (por ejemplo, punteros) en Vector<T>, especialmente en lo que se refiere a la comparación de contenidos y la gestión de memoria?
+Cuando se utilizan punteros como tipo T en Vector<T> (por ejemplo, Vector<Persona*>), el vector almacena punteros a objetos en el heap en lugar de los objetos mismos. Esto introduce dos aspectos clave que requieren atención: la comparación de contenidos y la gestión de memoria.
+Comparación de contenidos
+Por defecto, los operadores de comparación como <, > o == aplicados a punteros comparan las direcciones de memoria de los punteros, no los contenidos de los objetos a los que apuntan. Si deseamos ordenar un Vector<Persona*> según las propiedades de las personas (por ejemplo, su edad), los operadores de comparación por defecto no serán suficientes. En este caso, hay dos opciones principales:
+1.	Sobrecargar los operadores para punteros: Esto no es práctico ni común, ya que los punteros son tipos fundamentales. En cambio, se puede dereferenciar los punteros y usar los operadores definidos en la clase Persona.
+2.	Proporcionar una función de comparación personalizada: Modificar el algoritmo BubbleSort para que acepte una función o functor que compare los contenidos de los objetos apuntados. Por ejemplo:
+cpp
+ContraerAjusteCopiar
+bool compararPersonas(Persona* a, Persona* b) {
+    return a->edad < b->edad;
+}
+Luego, en la implementación de BubbleSort, se usaría esta función para comparar los elementos del vector en lugar de depender de los operadores por defecto.
+Gestión de memoria
+El destructor de Vector<T> (~Vector()) elimina el arreglo interno de punteros (delete[] items), pero no libera la memoria de los objetos a los que apuntan esos punteros. Esto significa que el usuario del vector es responsable de gestionar la memoria de los objetos en el heap para evitar fugas de memoria. Por ejemplo:
+cpp
+ContraerAjusteCopiar
+Vector<Persona*> personas;
+personas.pushBack(new Persona("Juan", 25));
+personas.pushBack(new Persona("Ana", 30));
+// Cuando el vector se destruya, los punteros se eliminan, pero los objetos Persona siguen en memoria.
+Para evitar fugas de memoria, se deben liberar manualmente los objetos antes de que el vector sea destruido:
+cpp
+ContraerAjusteCopiar
+for (int i = 0; i < personas.getSize(); i++) {
+    delete personas.at(i);
+}
+Una alternativa más segura es utilizar punteros inteligentes como sunique_ptr o shared_ptr, que gestionan automáticamente la memoria. Por ejemplo:
+cpp
+ContraerAjusteCopiar
+Vector<unique_ptr<Persona>> personas;
+personas.pushBack(make_unique<Persona>("Juan", 25));
+personas.pushBack(make_unique<Persona>("Ana", 30));
+// Los objetos se eliminan automáticamente cuando el vector se destruye.
+En este caso, no es necesario liberar la memoria manualmente, lo que reduce el riesgo de errores.
+________________________________________
+3. ¿Es posible crear una matriz utilizando únicamente Vector<T>? Es decir, ¿funcionaría Vector<Vector<T>>? Desarrolla tu respuesta y ajusta el código si es necesario.
+Sí, es posible crear una matriz utilizando Vector<Vector<T>>. Este enfoque crea un vector de vectores, donde el vector externo representa las filas y cada vector interno representa los elementos de una fila (o viceversa, según la convención). Esto permite simular una matriz dinámica en C++.
+Ejemplo de creación de una matriz
+Para crear una matriz de 3x3 de enteros con Vector<Vector<int>>, se podría hacer lo siguiente:
+cpp
+ContraerAjusteCopiar
+Vector<Vector<int>> matriz(3); // Vector externo con 3 filas
+for (int i = 0; i < 3; i++) {
+    matriz.set(i, Vector<int>(3)); // Cada fila es un vector de 3 elementos
+}
+
+// Rellenar la matriz
+matriz.at(0).pushBack(1);
+matriz.at(0).pushBack(2);
+matriz.at(0).pushBack(3);
+matriz.at(1).pushBack(4);
+matriz.at(1).pushBack(5);
+matriz.at(1).pushBack(6);
+matriz.at(2).pushBack(7);
+matriz.at(2).pushBack(8);
+matriz.at(2).pushBack(9);
+
+// Imprimir la matriz
+for (int i = 0; i < matriz.getSize(); i++) {
+    matriz.at(i).print();
+}
+Consideraciones y ajustes
+1.	Inicialización: En el código proporcionado, el constructor de Vector<T> acepta una capacidad inicial (_capacity), pero no inicializa el tamaño (size) de los vectores internos. Esto significa que inicialmente cada Vector<int> interno tiene tamaño 0, y se deben usar pushBack para agregar elementos. Si se desea que las filas tengan un tamaño inicial fijo, se podría modificar el constructor o inicializar los vectores internos con un tamaño específico.
+2.	Acceso a elementos: Para acceder a un elemento en la posición (i, j) de la matriz, se usa matriz.at(i).at(j). Esto funciona correctamente siempre que los índices estén dentro de los límites del tamaño de cada vector.
+3.	Matrices irregulares: Una ventaja de Vector<Vector<T>> es que permite matrices irregulares (filas de diferentes tamaños). Si se necesita una matriz regular (todas las filas del mismo tamaño), se debe garantizar que cada vector interno tenga el mismo número de elementos.
+4.	Código funcional: El código de Vector<T> proporcionado ya es suficiente para soportar Vector<Vector<T>>, ya que los métodos como pushBack, at, set y print funcionan correctamente para tipos genéricos, incluidos otros vectores. No se requieren ajustes adicionales en la implementación actual.
+Ejemplo completo con Personas
+Para una matriz de Persona:
+cpp
+ContraerAjusteCopiar
+Vector<Vector<Persona>> matrizPersonas(2); // 2 filas
+for (int i = 0; i < 2; i++) {
+    matrizPersonas.set(i, Vector<Persona>(2)); // Cada fila con capacidad inicial de 2
+}
+
+matrizPersonas.at(0).pushBack(Persona("Juan", 25));
+matrizPersonas.at(0).pushBack(Persona("Ana", 30));
+matrizPersonas.at(1).pushBack(Persona("Luis", 20));
+matrizPersonas.at(1).pushBack(Persona("Marta", 28));
+
+for (int i = 0; i < matrizPersonas.getSize(); i++) {
+    matrizPersonas.at(i).print();
+}
+Esto imprimirá una matriz de 2x2 de objetos Persona.
+
+Resumen
+•	Operadores para BubbleSort: Se debe sobrecargar al menos el operador < en la clase T (por ejemplo, en Persona) para permitir la comparación en el algoritmo de ordenación.
+•	Punteros en Vector<T>: Hay que gestionar manualmente la memoria de los objetos en el heap o usar punteros inteligentes, y ajustar las comparaciones para evaluar contenidos en lugar de direcciones.
+•	Matriz con Vector<Vector<T>>: Sí, es posible y funcional con el código actual, permitiendo matrices dinámicas e incluso irregulares, con acceso a elementos mediante at(i).at(j).
